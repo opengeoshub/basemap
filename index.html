@@ -41,9 +41,14 @@
   
   <!-- MapLibre GL Geocoder JS -->
   <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.min.js"></script>
+
+  <!-- PMTiles (UMD global: pmtiles) — do not ES-import dist/pmtiles.js -->
+  <script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
   
   <script type="module">
     import * as maplibregl from 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.mjs';
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
 
     // Define available map styles (from opengeoshub/vstyles)
     const VSTYLES_BASE = 'https://raw.githubusercontent.com/opengeoshub/vstyles/refs/heads/main/vstyles/vn';
@@ -75,6 +80,13 @@
         image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/dark.png',
         styleUrl: `${VSTYLES_BASE}/dark.json`,
         description: 'Dark theme for low-light viewing'
+      },
+      {
+        id: 'ocean',
+        name: 'Ocean',
+        image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
+        styleUrl: `${VSTYLES_BASE}/ocean.json`,
+        description: 'Basic style with ocean bottom bathymetry'
       },
       {
         id: 'positron',
