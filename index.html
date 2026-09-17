@@ -44,11 +44,23 @@
 
   <!-- PMTiles (UMD global: pmtiles) — do not ES-import dist/pmtiles.js -->
   <script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
+
+  <!-- maplibre-contour (UMD global: mlcontour) for DEM-derived contour lines -->
+  <script src="https://unpkg.com/maplibre-contour@0.0.5/dist/index.min.js"></script>
   
   <script type="module">
     import * as maplibregl from 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.mjs';
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
+
+    // Client-side contours from Mapterhorn DEM (https://mapterhorn.com/examples/contour/)
+    const demSource = new mlcontour.DemSource({
+      url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
+      encoding: 'terrarium',
+      maxzoom: 12,
+      worker: true
+    });
+    demSource.setupMaplibre(maplibregl);
 
     // Define available map styles (from opengeoshub/vstyles)
     const VSTYLES_BASE = 'https://raw.githubusercontent.com/opengeoshub/vstyles/refs/heads/main/vstyles/vn';
@@ -59,20 +71,6 @@
         image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
         styleUrl: `${VSTYLES_BASE}/admin.json`,
         description: 'Administrative boundaries with provinces and wards'
-      },
-      {
-        id: 'basic',
-        name: 'Basic',
-        image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
-        styleUrl: `${VSTYLES_BASE}/basic.json`,
-        description: 'Basic map style'
-      },
-      {
-        id: 'bright',
-        name: 'Bright',
-        image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
-        styleUrl: `${VSTYLES_BASE}/bright.json`,
-        description: 'Bright style with colorful features'
       },
       {
         id: 'dark',
@@ -87,13 +85,6 @@
         image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/dark.png',
         styleUrl: `${VSTYLES_BASE}/night.json`,
         description: 'Night Earth style with satellite night lights'
-      },
-      {
-        id: 'ocean',
-        name: 'Ocean',
-        image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
-        styleUrl: `${VSTYLES_BASE}/ocean.json`,
-        description: 'Basic style with ocean bottom bathymetry'
       },
       {
         id: 'positron',
@@ -122,6 +113,13 @@
         image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/osm.png',
         styleUrl: `${VSTYLES_BASE}/liberty.json`,
         description: 'Liberty style'
+      },
+      {
+        id: 'topography',
+        name: 'Topography',
+        image: 'https://raw.githubusercontent.com/opengeoshub/vstyles/refs/heads/main/vstyles/omt/topography/topography.png',
+        styleUrl: `${VSTYLES_BASE}/topography.json`,
+        description: 'Topographic style with contours and hillshade'
       },
       {
         id: 'terrain',
@@ -234,9 +232,24 @@
 
     // Add the style switcher control to the map
     map.addControl(styleSwitcher, 'bottom-right');
-    map.addControl(new maplibregl.GlobeControl(),'top-right');
-    // Add navigation controls
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.GlobeControl(), 'top-right');
+    // Add navigation controls (visualizePitch helps with 3D terrain)
+    map.addControl(
+      new maplibregl.NavigationControl({
+        visualizePitch: true,
+        showZoom: true,
+        showCompass: true
+      }),
+      'top-right'
+    );
+    // Toggle 3D terrain (requires terrainSource in the active style, e.g. terrain.json)
+    map.addControl(
+      new maplibregl.TerrainControl({
+        source: 'terrainSource',
+        exaggeration: 1
+      }),
+      'top-right'
+    );
   </script>
 </body>
 </html>
