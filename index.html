@@ -172,23 +172,13 @@
     });
 
     // Geocoder API using Nominatim
-    // Vietnam bounding box: min_lon, min_lat, max_lon, max_lat
-    const vietnamBbox = {
-      minLon: 102.14441,
-      minLat: 8.179066,
-      maxLon: 109.464588,
-      maxLat: 23.39265
-    };
-
     const geocoderApi = {
       forwardGeocode: async (config) => {
         const features = [];
         try {
-          // Limit search to Vietnam bounding box using viewbox and bounded parameters
           const query = encodeURIComponent(config.query);
-          const viewbox = `${vietnamBbox.minLon},${vietnamBbox.minLat},${vietnamBbox.maxLon},${vietnamBbox.maxLat}`;
           const request =
-            `https://nominatim.openstreetmap.org/search?q=${query}&format=geojson&polygon_geojson=1&addressdetails=1&viewbox=${viewbox}&bounded=1`;
+            `https://nominatim.openstreetmap.org/search?q=${query}&format=geojson&polygon_geojson=1&addressdetails=1`;
           const response = await fetch(request);
           const geojson = await response.json();
           for (const feature of geojson.features) {
@@ -225,7 +215,11 @@
     // Add the geocoder control to the top-left
     map.addControl(
       new MaplibreGeocoder(geocoderApi, {
-        maplibregl
+        maplibregl,
+        zoom: 12,
+        flyTo: {
+          maxZoom: 12
+        }
       }),
       'top-left'
     );
