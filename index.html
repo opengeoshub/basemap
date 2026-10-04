@@ -30,6 +30,25 @@
       width: 100%;
       height: 100vh;
     }    
+
+    .maplibre-control-zoomhome {
+      cursor: pointer;
+    }
+    .maplibre-control-zoomhome button {
+      width: 29px;
+      height: 29px;
+      display: block;
+      padding: 0;
+      border: 0;
+      cursor: pointer;
+      background: transparent;
+    }
+    .maplibre-control-zoomhome button img {
+      width: 18px;
+      height: 18px;
+      display: block;
+      margin: 5px auto;
+    }
  
   </style>
 </head>
@@ -52,6 +71,7 @@
     import * as maplibregl from 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.mjs';
     // esm.sh compiles the TypeScript source from the pop repo to a JS module.
     import { MapLibreAtmosphereEffects } from 'https://esm.sh/gh/opengeoshub/pop@main/src/lib/MapLibreAtmosphereEffects.ts';
+    import { MapLibreControlZoomHome } from 'https://esm.sh/gh/opengeoshub/pop@main/src/lib/MapLibreControlZoomHome.ts';
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -139,12 +159,15 @@
       }
     ];
 
+    const INITIAL_CENTER = [108.2772, 14.0583];
+    const INITIAL_ZOOM = 2;
+
     // Initialize the map with the first style
     const map = new maplibregl.Map({
       container: 'map',
       style: styles[0].styleUrl,
-      center: [108.2772, 14.0583],
-      zoom: 2,
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
     });
     map.once('style.load', () => map.setProjection({ type: 'globe' }));
 
@@ -241,6 +264,13 @@
         visualizePitch: true,
         showZoom: true,
         showCompass: true
+      }),
+      'top-right'
+    );
+    map.addControl(
+      new MapLibreControlZoomHome({
+        resetLngLat: INITIAL_CENTER,
+        resetZoom: INITIAL_ZOOM,
       }),
       'top-right'
     );
