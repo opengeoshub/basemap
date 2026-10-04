@@ -50,6 +50,8 @@
   
   <script type="module">
     import * as maplibregl from 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.mjs';
+    // esm.sh compiles the TypeScript source from the pop repo to a JS module.
+    import { MapLibreAtmosphereEffects } from 'https://esm.sh/gh/opengeoshub/pop@main/src/lib/MapLibreAtmosphereEffects.ts';
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -142,10 +144,12 @@
       container: 'map',
       style: styles[0].styleUrl,
       center: [108.2772, 14.0583],
-      zoom: 3.5,
+      zoom: 2,
     });
+    map.once('style.load', () => map.setProjection({ type: 'globe' }));
 
     // map.addControl(new maplibregl.GlobeControl());
+    new MapLibreAtmosphereEffects(map);
 
     // Wait for the map to load
     map.on('load', () => {
@@ -164,7 +168,11 @@
       activeStyleId: styles[0].id,
       onAfterStyleChange: (from, to) => {
         console.log(`Switching from ${from.name} to ${to.name}`);
-        map.setStyle(to.styleUrl);
+        // Keep the current projection (globe or mercator) across style switches.
+        const projection = map.getProjection() ?? { type: 'globe' };
+        map.setStyle(to.styleUrl, {
+          transformStyle: (_previous, next) => ({ ...next, projection }),
+        });
       },
       onBeforeStyleChange: (from, to) => {
         console.log(`About to switch from ${from.name} to ${to.name}`);
